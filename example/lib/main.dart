@@ -84,8 +84,26 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> fetchUntis() async {
-    throw UnimplementedError("The credentials need to be filled out!");
-    final UntisSession s = await UntisSession.init();
+    // These need to be defined from cli (--dart-define)
+    // https://dartcode.org/docs/using-dart-define-in-flutter/
+    const server = String.fromEnvironment('UNTIS_SERVER');
+    if (server.isEmpty) {
+      throw AssertionError('UNTIS_SERVER is not set');
+    }
+    const school = String.fromEnvironment('UNTIS_SCHOOL');
+    if (school.isEmpty) {
+      throw AssertionError('UNTIS_SCHOOL is not set');
+    }
+    const username = String.fromEnvironment('UNTIS_USER');
+    if (username.isEmpty) {
+      throw AssertionError('UNTIS_USER is not set');
+    }
+    const password = String.fromEnvironment('UNTIS_PASS');
+    if (password.isEmpty) {
+      throw AssertionError('UNTIS_PASS is not set');
+    }
+    final UntisSession s =
+        await UntisSession.init(server, school, username, password);
     DateTime date = DateTime.now().subtract(Duration(days: 14));
     while (date.weekday != 1) {
       date = date.subtract(Duration(days: 1));
