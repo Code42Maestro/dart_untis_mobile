@@ -32,14 +32,12 @@ abstract class UntisRequest {
       'method': _method,
       'params': <Map<String, dynamic>>[_params]
     });
-    print("Request: $request");
     final http.Response response = await http.post(apiEndpoint,
         headers: <String, String>{
           'Accept': 'application/json',
           'Content-Type': 'application/json; charset=utf-8'
         },
         body: request);
-    print("Response: " + response.body);
     final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
     if (response.statusCode != 200 || jsonResponse.containsKey('error')) {
       final int untisErrorCode =
@@ -91,6 +89,92 @@ class UserDataRequest extends UntisRequest {
   }
 }
 
+class AbsencesRequest extends UntisRequest {
+  @override
+  final String _method = 'getStudentAbsences2017';
+
+  /// If startDate lies more in the Future than endDate,
+  /// endDate will be startDate + 356days
+  AbsencesRequest(
+      super.apiEndpoint,
+      UntisAuthentication auth,
+      DateTime startDate,
+      DateTime endDate,
+      bool includeExcused,
+      bool includeUnExcused)
+      : super(auth: auth) {
+    final Duration dateDiff = startDate.difference(endDate);
+    if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 356));
+    super._params = <String, dynamic>{
+      'startDate': dateTimeToUntisDate(startDate),
+      'endDate': dateTimeToUntisDate(endDate),
+      'includeExcused': includeExcused,
+      'includeUnExcused': includeUnExcused
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>?> request() async {
+    final Map<String, dynamic>? json =
+        (await super._request()) as Map<String, dynamic>?;
+    return json;
+  }
+}
+
+class ExamsRequest extends UntisRequest {
+  @override
+  final String _method = 'getExams2017';
+
+  /// If startDate lies more in the Future than endDate,
+  /// endDate will be startDate + 7days
+  ExamsRequest(super.apiEndpoint, UntisAuthentication auth,
+      UntisElementDescriptor id, DateTime startDate, DateTime endDate)
+      : super(auth: auth) {
+    final Duration dateDiff = startDate.difference(endDate);
+    if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
+    super._params = <String, dynamic>{
+      'id': id.id,
+      'type': id.type.name,
+      'startDate': dateTimeToUntisDate(startDate),
+      'endDate': dateTimeToUntisDate(endDate)
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>?> request() async {
+    final Map<String, dynamic>? json =
+        (await super._request()) as Map<String, dynamic>?;
+    return json;
+  }
+}
+
+class HomeworkRequest extends UntisRequest {
+  @override
+  final String _method = 'getHomeWork2017';
+
+  /// If startDate lies more in the Future than endDate,
+  /// endDate will be startDate + 7days
+  HomeworkRequest(super.apiEndpoint, UntisAuthentication auth,
+      UntisElementDescriptor id, DateTime startDate, DateTime endDate)
+      : super(auth: auth) {
+    final Duration dateDiff = startDate.difference(endDate);
+    if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
+    super._params = <String, dynamic>{
+      'id': id.id,
+      'type': id.type.name,
+      'startDate': dateTimeToUntisDate(startDate),
+      'endDate': dateTimeToUntisDate(endDate)
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>?> request() async {
+    final Map<String, dynamic>? json =
+        (await super._request()) as Map<String, dynamic>?;
+    return json;
+  }
+}
+
 class TimetableRequest extends UntisRequest {
   @override
   final String _method = 'getTimetable2017';
@@ -109,6 +193,7 @@ class TimetableRequest extends UntisRequest {
       : super(auth: auth) {
     final Duration dateDiff = startDate.difference(endDate);
     if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
+
     super._params = <String, dynamic>{
       'id': id.id,
       'type': id.type.name,

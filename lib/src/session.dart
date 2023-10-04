@@ -1,18 +1,27 @@
 import 'dart:async';
 
+import 'absence_objects.dart';
 import 'auth.dart';
 import 'objects.dart';
 import 'requests.dart';
 import 'timetable_objects.dart';
 import 'util.dart';
 
+/// The main object to interact with the Untis Mobile API
 class UntisSession {
+  /// The api endpoint, i. e. [apiTemplate], replaced with values
   final String apiEndpoint;
+
+  /// The username of the user logged in
   final String username;
 
   late String _appSharedSecret;
   final String _password;
 
+  /// The auth object for making requests
+  ///
+  /// This may get private, as this can't be used effectively
+  /// outside of this library
   UntisAuthentication get auth =>
       UntisAuthentication.currentTime(username, _appSharedSecret);
 
@@ -37,15 +46,15 @@ class UntisSession {
 
   UntisSession._(String server, String school, this.username, this._password)
       : apiEndpoint = apiTemplate
-      .replaceAll('%SRV%', server)
-      .replaceAll('%SCHOOL%', school);
+            .replaceAll('%SRV%', server)
+            .replaceAll('%SCHOOL%', school);
 
   /// The only way to construct a instance of UntisSession.
   ///
   /// The function uses [server], [school], [username] and [password] to
   /// set the API endpoint and login.
-  static Future<UntisSession> init(String server, String school,
-      String username, String password) async {
+  static Future<UntisSession> init(
+      String server, String school, String username, String password) async {
     final UntisSession s = UntisSession._(server, school, username, password);
     await s.login();
     return s;
@@ -56,18 +65,82 @@ class UntisSession {
   /// for auth
   Future<void> login() async {
     _appSharedSecret =
-    (await AppSharedSecretRequest(apiEndpoint, username, _password)
-        .request())!;
+        (await AppSharedSecretRequest(apiEndpoint, username, _password)
+            .request())!;
   }
 
   /// Get StudentData, for more specific information of what this is,
   /// refer to [UntisStudentData] iself.
   Future<UntisStudentData> getUserData() async {
     final Map<String, dynamic> json =
-    (await UserDataRequest(apiEndpoint, auth).request())!;
+        (await UserDataRequest(apiEndpoint, auth).request())!;
     unawaited(_refreshMasterData(json['masterData']));
-    _studentData = UntisStudentData.fromJson(json['userData']);
-    return _studentData!;
+    return UntisStudentData.fromJson(json['userData']);
+  }
+
+  /// Gets Absences within defined time period and with search parameters.
+  ///
+  /// You can provide a [startDate], which defaults to [DateTime.now()].
+  /// An [endDate], which defaults to [startDate + 1 year]. Additionally whether
+  /// it should include absences, that are excused or/and ones that are not excused.
+  Future<List<UntisAbsence>> getAbsences(
+      {DateTime? startDate,
+      DateTime? endDate,
+      bool includeExcuseds = true,
+      bool includeUnExcuseds = false}) async {
+    startDate ??= DateTime.now();
+    endDate ??= startDate.add(const Duration(days: 356));
+
+    final AbsencesRequest request = AbsencesRequest(apiEndpoint, auth,
+        startDate, endDate, includeExcuseds, includeUnExcuseds);
+    final Map<String, dynamic> json = (await request.request())!;
+    return <UntisAbsence>[
+      for (final Map<String, dynamic> entry in json['absences'])
+        await UntisAbsence.fromJson(this, entry)
+    ];
+  }
+
+  /// Gets Homeworks within defined time period and with search parameters.
+  ///
+  /// You can provide a [startDate], which defaults to [DateTime.now()].
+  /// An [endDate], which defaults to [startDate + 7 days]. Additionally
+  /// an [id] can be specified.
+  Future<List<UntisExam>> getExams(
+      {DateTime? startDate,
+      DateTime? endDate,
+      UntisElementDescriptor? id}) async {
+    startDate ??= DateTime.now();
+    endDate ??= startDate.add(const Duration(days: 7));
+
+    final ExamsRequest request = ExamsRequest(
+        apiEndpoint, auth, id ?? (await studentData).id, startDate, endDate);
+    final Map<String, dynamic> json = (await request.request())!;
+    return <UntisExam>[
+      for (final Map<String, dynamic> entry in json['exams'])
+        UntisExam.fromJson(entry)
+    ];
+  }
+
+  /// Gets Homeworks within defined time period and with search parameters.
+  ///
+  /// You can provide a [startDate], which defaults to [DateTime.now()].
+  /// An [endDate], which defaults to [startDate + 7 days]. Additionally
+  /// an [id] can be specified.
+  // TODO(Code42Maestro): Establish the fetching of the lesson period
+  Future<List<UntisHomework>> getHomework(
+      {DateTime? startDate,
+      DateTime? endDate,
+      UntisElementDescriptor? id}) async {
+    startDate ??= DateTime.now();
+    endDate ??= startDate.add(const Duration(days: 7));
+
+    final HomeworkRequest request = HomeworkRequest(
+        apiEndpoint, auth, id ?? (await studentData).id, startDate, endDate);
+    final Map<String, dynamic> json = (await request.request())!;
+    return <UntisHomework>[
+      for (final Map<String, dynamic> entry in json['homeWorks'])
+        UntisHomework.fromJson(entry)
+    ];
   }
 
   /// Returns subjects, which are in the current timetable of the user/class
@@ -83,9 +156,9 @@ class UntisSession {
     timeSpan ??= const Duration(days: 128);
 
     final List<UntisPeriod> periods =
-    await getTimetablePeriods(id, endDate: DateTime.now().add(timeSpan));
+        await getTimetablePeriods(id, endDate: DateTime.now().add(timeSpan));
     final Iterable<UntisSubject> subjectsInTimeSpan =
-    periods.expand((UntisPeriod e) => e.subjects);
+        periods.expand((UntisPeriod e) => e.subjects);
     return (await subjects).where(subjectsInTimeSpan.contains).toList();
   }
 
@@ -95,14 +168,15 @@ class UntisSession {
   /// An [endDate], which defaults to [startDate + 7 days] and an [id],
   /// which defaults to student id and describes the timetable to get.
   /// These can be from a class or the student.
-  Future<UntisTimetable> getTimetable({UntisElementDescriptor? id,
-    DateTime? startDate,
-    DateTime? endDate}) async {
+  Future<UntisTimetable> getTimetable(
+      {UntisElementDescriptor? id,
+      DateTime? startDate,
+      DateTime? endDate}) async {
     startDate ??= DateTime.now();
     endDate ??= startDate.add(const Duration(days: 7));
 
     final TimetableRequest request = TimetableRequest(apiEndpoint, auth,
-        id ?? (await studentData).id, _masterDataTimestamp, startDate, endDate);
+        id ?? (await studentData).id, masterDataTimestamp, startDate, endDate);
     final Map<String, dynamic> json = (await request.request())!;
     unawaited(_refreshMasterData(json['masterData']));
     return UntisTimetable.fromJson(this, json['timetable']);
@@ -135,11 +209,25 @@ class UntisSession {
 
   List<UntisEventReason>? _eventReasons = <UntisEventReason>[];
 
+  /// Don't know how this is used, but these could be reasons for students or
+  /// for classes.
+  ///
+  /// A few examples are for students, active participation,
+  /// passive participation, no homework,
+  /// no sport clothes or no working material
+  ///
+  /// For whole classes there are these, instruction(indoctrination) or the
+  /// messaging of the current grades.
   Future<List<UntisEventReason>> get eventReasons =>
       execAsyncFuncIfNull(_eventReasons, _fetchAndCacheMasterData);
 
   List<UntisEventReasonGroup>? _eventReasonGroups = <UntisEventReasonGroup>[];
 
+  /// The different "types" of event reasons (whatever event reasons are), used
+  /// by [UntisEventReason]
+  ///
+  /// These are usually, notice, participation in sports and
+  /// material and homework
   Future<List<UntisEventReasonGroup>> get eventReasonGroups =>
       execAsyncFuncIfNull(_eventReasonGroups, _fetchAndCacheMasterData);
 
@@ -153,49 +241,55 @@ class UntisSession {
 
   List<UntisHoliday>? _holidays = <UntisHoliday>[];
 
+  /// The time periods, where you don't have school
   Future<List<UntisHoliday>> get holidays =>
       execAsyncFuncIfNull(_holidays, _fetchAndCacheMasterData);
 
   List<UntisClass>? _classes = <UntisClass>[];
 
+  /// All [UntisClass]es of this school
   Future<List<UntisClass>> get classes =>
       execAsyncFuncIfNull(_classes, _fetchAndCacheMasterData);
 
   List<UntisRoom>? _rooms = <UntisRoom>[];
 
+  /// All [UntisRoom]s of this school
   Future<List<UntisRoom>> get rooms =>
       execAsyncFuncIfNull(_rooms, _fetchAndCacheMasterData);
 
   List<UntisSubject>? _subjects = <UntisSubject>[];
 
+  /// All [UntisSubject]s of this school
   Future<List<UntisSubject>> get subjects =>
       execAsyncFuncIfNull(_subjects, _fetchAndCacheMasterData);
 
   List<UntisTeacher>? _teachers = <UntisTeacher>[];
 
+  /// All [UntisTeacher]s of this school
   Future<List<UntisTeacher>> get teachers =>
       execAsyncFuncIfNull(_teachers, _fetchAndCacheMasterData);
 
   List<UntisYear>? _schoolYears = <UntisYear>[];
 
+  /// All [UntisYear]s of this school
   Future<List<UntisYear>> get schoolYears =>
       execAsyncFuncIfNull(_schoolYears, _fetchAndCacheMasterData);
 
   UntisTimeGrid? _timeGrid;
 
+  /// A time grid, which reflects a table, which is the layout of the timetables
   Future<UntisTimeGrid> get timeGrid async =>
       _timeGrid ?? await _fetchAndCacheMasterData();
 
-  UntisStudentData? _studentData;
-
+  /// Provides information about general information about the user
   Future<UntisStudentData> get studentData => getUserData();
 
-  int _masterDataTimestamp = 0;
+  /// The latest time any variable from "masterData" was refreshed
+  int masterDataTimestamp = 0;
 
   Future<UntisTimeGrid> _fetchAndCacheMasterData() async {
-    print("Refresh master data, because it was null");
     final Map<String, dynamic> json =
-    (await UserDataRequest(apiEndpoint, auth).request())!;
+        (await UserDataRequest(apiEndpoint, auth).request())!;
     await _refreshMasterData(json['masterData']);
     // This thing returns timeGrid because this is always updated.
     // Additionally we need it to set a getter
@@ -203,7 +297,7 @@ class UntisSession {
   }
 
   /// Updates cache from [masterData], it comes along userdata and timetable,
-  /// this is resend if outdated (referring to [_masterDataTimestamp])
+  /// this is resend if outdated (referring to [masterDataTimestamp])
   ///
   /// There needs to be a cache of subjects/classes/rooms etc.
   /// We can't get these from other requests, persisting [masterData] is needed.
@@ -213,21 +307,21 @@ class UntisSession {
   Future<void> _refreshMasterData(Map<String, dynamic> masterData) async {
     // These are the only two values/objects which will exist on every fetch of masterData
     _timeGrid = UntisTimeGrid.fromJson(masterData['timeGrid']);
-    _masterDataTimestamp = masterData['timeStamp'];
+    masterDataTimestamp = masterData['timeStamp'];
 
     _absenceReasons = iterateFromJson(
-        UntisAbsenceReason.fromJson, masterData['absenceReasons']) ??
+            UntisAbsenceReason.fromJson, masterData['absenceReasons']) ??
         _absenceReasons;
     _duties =
         iterateFromJson(UntisDuty.fromJson, masterData['duties']) ?? _duties;
     _eventReasons = iterateFromJson(
-        UntisEventReason.fromJson, masterData['eventReasons']) ??
+            UntisEventReason.fromJson, masterData['eventReasons']) ??
         _eventReasons;
     _eventReasonGroups = iterateFromJson(
-        UntisEventReasonGroup.fromJson, masterData['eventReasonGroups']) ??
+            UntisEventReasonGroup.fromJson, masterData['eventReasonGroups']) ??
         _eventReasonGroups;
     _excuseStates = iterateFromJson(
-        UntisExcuseStatus.fromJson, masterData['excuseStatuses']) ??
+            UntisExcuseStatus.fromJson, masterData['excuseStatuses']) ??
         _excuseStates;
     _holidays =
         iterateFromJson(UntisHoliday.fromJson, masterData['holidays']) ??
@@ -249,27 +343,19 @@ class UntisSession {
   /// Get [UntisClass] from [id]
   ///
   Future<UntisClass?> getClassById(int id) async =>
-      (await classes)
-          .where((UntisClass e) => e.id.id == id)
-          .firstOrNull;
+      (await classes).where((UntisClass e) => e.id.id == id).firstOrNull;
 
   /// Get [UntisTeacher] from [id]
   Future<UntisTeacher?> getTeacherById(int id) async =>
-      (await teachers)
-          .where((UntisTeacher e) => e.id.id == id)
-          .firstOrNull;
+      (await teachers).where((UntisTeacher e) => e.id.id == id).firstOrNull;
 
   /// Get [UntisSubject] from [id]
   Future<UntisSubject?> getSubjectById(int id) async =>
-      (await subjects)
-          .where((UntisSubject e) => e.id.id == id)
-          .firstOrNull;
+      (await subjects).where((UntisSubject e) => e.id.id == id).firstOrNull;
 
   /// Get [UntisRoom] from [id]
   Future<UntisRoom?> getRoomById(int id) async =>
-      (await rooms)
-          .where((UntisRoom e) => e.id.id == id)
-          .firstOrNull;
+      (await rooms).where((UntisRoom e) => e.id.id == id).firstOrNull;
 
   /// Gets the student, class, teacher, subject or room or returns null
   ///
