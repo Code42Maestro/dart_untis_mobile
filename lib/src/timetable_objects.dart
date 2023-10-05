@@ -1,5 +1,3 @@
-import 'package:color/color.dart';
-
 import 'objects.dart';
 import 'session.dart';
 import 'util.dart';
@@ -36,8 +34,7 @@ class UntisPeriodText {
         attachments = json['attachments'];
 
   @override
-  String toString() =>
-      <String, dynamic>{
+  String toString() => <String, dynamic>{
         'lesson': lesson,
         'substitution': substitution,
         'notes': notes,
@@ -59,8 +56,7 @@ enum UntisPeriodState {
   /// Parses the name of an enum to the actual enum
   static UntisPeriodState parse(String typeName) =>
       UntisPeriodState.values.firstWhere(
-              (UntisPeriodState element) =>
-          element.name == typeName.toLowerCase());
+          (UntisPeriodState element) => element.name == typeName.toLowerCase());
 
   @override
   String toString() => name;
@@ -83,16 +79,20 @@ class UntisPeriod {
   final DateTime endDateTime;
 
   /// Foreground color of this period
-  final Color foreColor;
+  ///
+  /// This is probably not the real color, refer to the subject colors
+  final int foreColorValue;
 
   /// Background color of this period
-  final Color backColor;
+  ///
+  /// This is probably not the real color, refer to the subject colors
+  final int backColorValue;
 
   /// Unknown use, maybe always null?
-  final Color innerForeColor;
+  final int innerForeColorValue;
 
   /// Unknown use, maybe always null?
-  final Color innerBackColor;
+  final int innerBackColorValue;
 
   /// This text object is mostly used when period [isIrregular].
   /// It then delivers general information about the period
@@ -230,14 +230,15 @@ class UntisPeriod {
   /// the same [blockHash]
   final int blockHash;
 
-  UntisPeriod._(this.id,
+  UntisPeriod._(
+      this.id,
       this.lessonId,
       this.startDateTime,
       this.endDateTime,
-      this.foreColor,
-      this.backColor,
-      this.innerForeColor,
-      this.innerBackColor,
+      this.foreColorValue,
+      this.backColorValue,
+      this.innerForeColorValue,
+      this.innerBackColorValue,
       this.text,
       this.rights,
       this.states,
@@ -247,46 +248,45 @@ class UntisPeriod {
       this.isOnlinePeriod,
       this.blockHash);
 
-  static Future<void> _setElementFields<T>(Iterable<dynamic> json,
+  static Future<void> _setElementFields<T>(
+      Iterable<dynamic> json,
       Future<T?> Function(int) getElementFromId,
       List<T> planField,
       List<T> field) {
     planField.clear();
     final Iterable<int> pIds =
-    json.map((dynamic e) => (e as Map<String, dynamic>)['orgId']);
+        json.map((dynamic e) => (e as Map<String, dynamic>)['orgId']);
     final Future<List<void>> planFieldFuture = Future.wait(
-        pIds.map((int id) =>
-            getElementFromId(id).then((T? element) {
+        pIds.map((int id) => getElementFromId(id).then((T? element) {
               // Is this even necessary? Because this should not be null
               if (element != null) planField.add(element);
             })));
 
     field.clear();
     final Iterable<int> ids =
-    json.map((dynamic e) => (e as Map<String, dynamic>)['id']);
+        json.map((dynamic e) => (e as Map<String, dynamic>)['id']);
     final Future<List<void>> fieldFuture =
-    Future.wait(ids.map((int id) =>
-        getElementFromId(id).then((T? element) {
-          // Is this even necessary? Because this should not be null
-          if (element != null) field.add(element);
-        })));
+        Future.wait(ids.map((int id) => getElementFromId(id).then((T? element) {
+              // Is this even necessary? Because this should not be null
+              if (element != null) field.add(element);
+            })));
     return Future.wait(<Future<List<void>>>[planFieldFuture, fieldFuture]);
   }
 
   /// Parses this object from [json]
   ///
   /// This class needs [UntisSession] to fetch the ids for class/teachers/rooms/subjects
-  static Future<UntisPeriod> fromJson(UntisSession s,
-      Map<String, dynamic> json) async {
+  static Future<UntisPeriod> fromJson(
+      UntisSession s, Map<String, dynamic> json) async {
     final UntisPeriod p = UntisPeriod._(
         json['id'],
         json['lessonId'],
         untisDateTimeToDateTime(json['startDateTime'])!,
         untisDateTimeToDateTime(json['endDateTime'])!,
-        Color.hex(json['foreColor']),
-        Color.hex(json['backColor']),
-        Color.hex(json['innerForeColor']),
-        Color.hex(json['innerBackColor']),
+        colorValueFromHex(json['foreColor']),
+        colorValueFromHex(json['backColor']),
+        colorValueFromHex(json['innerForeColor']),
+        colorValueFromHex(json['innerBackColor']),
         UntisPeriodText.fromJson(json['text']),
         json['can'],
         <UntisPeriodState>[
@@ -302,29 +302,29 @@ class UntisPeriod {
         json['blockHash']);
 
     final Iterable<Map<String, dynamic>> classElements =
-    List<Map<String, dynamic>>.from(json['elements'])
-        .where((Map<String, dynamic> e) => e['type'] == 'CLASS');
+        List<Map<String, dynamic>>.from(json['elements'])
+            .where((Map<String, dynamic> e) => e['type'] == 'CLASS');
 
     final Future<void> classFuture = _setElementFields(
         classElements, s.getClassById, p.planClasses, p.classes);
 
     final Iterable<Map<String, dynamic>> teacherElements =
-    List<Map<String, dynamic>>.from(json['elements'])
-        .where((Map<String, dynamic> e) => e['type'] == 'TEACHER');
+        List<Map<String, dynamic>>.from(json['elements'])
+            .where((Map<String, dynamic> e) => e['type'] == 'TEACHER');
     final Future<void> teacherFuture = _setElementFields(
         teacherElements, s.getTeacherById, p.planTeachers, p.teachers);
 
     final Iterable<Map<String, dynamic>> subjectElements =
-    List<Map<String, dynamic>>.from(json['elements'])
-        .where((Map<String, dynamic> e) => e['type'] == 'SUBJECT');
+        List<Map<String, dynamic>>.from(json['elements'])
+            .where((Map<String, dynamic> e) => e['type'] == 'SUBJECT');
     final Future<void> subjectFuture = _setElementFields(
         subjectElements, s.getSubjectById, p.planSubjects, p.subjects);
 
     final Iterable<Map<String, dynamic>> roomElements =
-    List<Map<String, dynamic>>.from(json['elements'])
-        .where((Map<String, dynamic> e) => e['type'] == 'ROOM');
+        List<Map<String, dynamic>>.from(json['elements'])
+            .where((Map<String, dynamic> e) => e['type'] == 'ROOM');
     final Future<void> roomFuture =
-    _setElementFields(roomElements, s.getRoomById, p.planRooms, p.rooms);
+        _setElementFields(roomElements, s.getRoomById, p.planRooms, p.rooms);
     // Run in parallel to speed up parsing, now we wait for all to finish
     await Future.wait(
         <Future<void>>[classFuture, teacherFuture, subjectFuture, roomFuture]);
@@ -335,8 +335,7 @@ class UntisPeriod {
   }
 
   @override
-  String toString() =>
-      <String, dynamic>{
+  String toString() => <String, dynamic>{
         'id': id,
         'lessonId': lessonId,
         'startDateTime': startDateTime,
@@ -345,9 +344,10 @@ class UntisPeriod {
         'teachers': subjects,
         'subjects': subjects,
         'rooms': rooms,
-        'foreColor': foreColor,
-        'backColor': backColor,
-        'innerForeColor': innerForeColor,
+        'foreColor': foreColorValue,
+        'backColor': backColorValue,
+        'innerForeColor': innerForeColorValue,
+        'innerBackColor': innerBackColorValue,
         'text': text,
         'rights': rights,
         'states': states,
@@ -381,12 +381,12 @@ class UntisTimetable {
     for (final UntisDay day in grid.days) {
       final int weekday = day.weekday;
       final Iterable<UntisPeriod> immutablePeriods =
-      periods.where((UntisPeriod e) => e.startDateTime.weekday == weekday);
+          periods.where((UntisPeriod e) => e.startDateTime.weekday == weekday);
       final List<UntisPeriod?> dailyPeriods = <UntisPeriod?>[];
       for (final UntisDayUnit unit in day.units) {
         dailyPeriods.add(immutablePeriods
             .where((UntisPeriod p) =>
-        p.startDateTime.copyWithHHM() == unit.startTime.copyWithHHM())
+                p.startDateTime.copyWithHHM() == unit.startTime.copyWithHHM())
             .firstOrNull);
       }
 
@@ -398,16 +398,16 @@ class UntisTimetable {
   /// The actual periods(lessons/lesson blocks) just sorted by startDate
   final List<UntisPeriod> periods;
 
-  UntisTimetable._(this.displayableStartDate, this.displayableEndDate,
-      this.periods);
+  UntisTimetable._(
+      this.displayableStartDate, this.displayableEndDate, this.periods);
 
   /// Parses this object from [json]
   ///
   /// This method needs [UntisSession] to pass it to [UntisPeriod.fromJson]
-  static Future<UntisTimetable> fromJson(UntisSession s,
-      Map<String, dynamic> json) async {
+  static Future<UntisTimetable> fromJson(
+      UntisSession s, Map<String, dynamic> json) async {
     final List<UntisPeriod> allPeriods =
-    await Future.wait(<Future<UntisPeriod>>[
+        await Future.wait(<Future<UntisPeriod>>[
       for (final Map<String, dynamic> period in json['periods'])
         UntisPeriod.fromJson(s, period)
     ]);
@@ -419,8 +419,7 @@ class UntisTimetable {
   }
 
   @override
-  String toString() =>
-      <String, dynamic>{
+  String toString() => <String, dynamic>{
         'displayableStartDate': displayableStartDate,
         'displayableEndDate': displayableEndDate,
         'periods': periods

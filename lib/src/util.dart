@@ -105,17 +105,15 @@ List<T>? iterateFromJson<T>(T Function(Map<String, dynamic>) fromJsonFunction,
   return objects.isEmpty ? null : objects;
 }
 
-/* This method is unneccessary as the color package implements parsing from hex
-   This method may get relevant if the library is not just dart anymore
 // Thanks to creativecreatorormaybenot & Md. Yeasin Sheikh
 // https://stackoverflow.com/questions/50081213/how-do-i-use-hexadecimal-color-strings-in-flutter
 /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
-Color colorFromHex(String hexString) {
-  final buffer = StringBuffer();
+int colorValueFromHex(String hexString) {
+  final StringBuffer buffer = StringBuffer();
   if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
   buffer.write(hexString.replaceFirst('#', ''));
-  return Color(int.parse(buffer.toString(), radix: 16));
-}*/
+  return int.parse(buffer.toString(), radix: 16);
+}
 
 Future<T> execAsyncFuncIfNull<T>(T? variable, dynamic Function() func) async {
   if (variable == null) await func();

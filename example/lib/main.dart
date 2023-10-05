@@ -17,12 +17,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Untis Mobile demo',
+      title: 'Untis Mobile Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Untis Mobile Demo Page'),
     );
   }
 }
@@ -63,15 +63,23 @@ class _MyHomePageState extends State<MyHomePage> {
     if (tt != null && grid != null) periods = tt!.groupedPeriods(grid!);
     final List<List<PeriodWidget>> pWidgets = periods
         .map((List<UntisPeriod?> plist) =>
-            plist.map((UntisPeriod? p) => PeriodWidget(period: p)).toList())
+        plist.map((UntisPeriod? p) => PeriodWidget(period: p)).toList())
         .toList();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
         title: Text(widget.title),
       ),
       body: GridView.builder(
-        itemCount: tt != null ? tt!.periods.length : 0,
+        // itemCount needs to include all the periods, also null ones
+        itemCount: tt != null
+            ? periods
+            .map((plist) => plist.length)
+            .reduce((value, element) => value + element)
+            : 0,
         shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: grid?.days.length ?? 1),
@@ -79,7 +87,18 @@ class _MyHomePageState extends State<MyHomePage> {
           // Calculate row and column values based on the index
           final int row = index ~/ grid!.days.length; // Floor division operator
           final int column = index % grid!.days.length;
-          return pWidgets[column][row];
+
+          return Container( // Make Grid visible (each cell draws border)
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.black54,
+                  width: 0.3,
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(1),
+                child: pWidgets[column][row],
+              ));
         },
       ),
     );
@@ -105,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
       throw AssertionError('UNTIS_PASS is not set');
     }
     final UntisSession s =
-        await UntisSession.init(server, school, username, password);
+    await UntisSession.init(server, school, username, password);
     DateTime date = DateTime.now().subtract(const Duration(days: 14));
     while (date.weekday != 1) {
       date = date.subtract(const Duration(days: 1));
@@ -125,13 +144,30 @@ class PeriodWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (period == null) return const Center(child: Text('Nothing'));
-    return Center(
-        child: Column(children: <Widget>[
-      Text(period!.subjects.isNotEmpty
-          ? period!.subjects.first.longName
-          : period!.text.lesson),
-      Text(period!.startDateTime.day.toString())
-    ]));
+    if (period == null) return const Center(child: Text('X'));
+    return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black12, width: 2),
+          borderRadius: BorderRadius.circular(10),
+          color:
+          Color(period!.subject!.backColorValue ?? period!.backColorValue),
+        ),
+        child: Center(
+            child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+              Text(
+                  period!.subjects.isNotEmpty
+                      ? period!.subject!.longName
+                      : period!.text.lesson,
+                  textAlign: TextAlign.center),
+              Text(
+                  period!.teachers.isNotEmpty
+                      ? period!.teacher!.fullName
+                      : "No teacher",
+                  textAlign: TextAlign.center),
+              Text(period!.rooms.isNotEmpty
+                  ? period!.room!.name
+                  : "Not in School",
+                  textAlign: TextAlign.center)
+            ])));
   }
 }

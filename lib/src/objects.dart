@@ -410,11 +410,11 @@ class UntisSubject extends Equatable {
 
   /// The foreground color, which is actually used for displaying the
   /// text of a subject
-  final String? foreColor;
+  final int? foreColorValue;
 
   /// The background color, which is actually used for displaying,
   /// for what is around the text
-  final String? backColor;
+  final int? backColorValue;
 
   /// Whether this subject is currently used or not, usually used, when there
   /// is need of replacing of a subject.
@@ -430,8 +430,12 @@ class UntisSubject extends Equatable {
         name = json['name'],
         longName = json['longName'],
         departmentIds = json['departmentIds'],
-        foreColor = json['foreColor'],
-        backColor = json['backColor'],
+        foreColorValue = json['foreColor'] != null
+            ? colorValueFromHex(json['foreColor'])
+            : null,
+        backColorValue = json['backColor'] != null
+            ? colorValueFromHex(json['backColor'])
+            : null,
         active = json['active'],
         displayAllowed = json['displayAllowed'];
 
@@ -444,8 +448,8 @@ class UntisSubject extends Equatable {
         'name': name,
         'longName': longName,
         'departmentIds': departmentIds,
-        'foreColor': foreColor,
-        'backColor': backColor,
+        'foreColor': foreColorValue,
+        'backColor': backColorValue,
         'active': active,
         'displayAllowed': displayAllowed,
       }.toString();
