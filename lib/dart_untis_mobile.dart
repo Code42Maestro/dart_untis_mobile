@@ -1,6 +1,3 @@
-///
-library untis_mobile;
-
 export 'src/absence_objects.dart';
 export 'src/objects.dart';
 export 'src/session.dart';
