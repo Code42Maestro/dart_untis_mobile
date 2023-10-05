@@ -18,11 +18,7 @@ class UntisSession {
   late String _appSharedSecret;
   final String _password;
 
-  /// The auth object for making requests
-  ///
-  /// This may get private, as this can't be used effectively
-  /// outside of this library
-  UntisAuthentication get auth =>
+  UntisAuthentication get _auth =>
       UntisAuthentication.currentTime(username, _appSharedSecret);
 
   /// Base = https://$server/WebUntis/jsonrpc_intern.do?school=school
@@ -73,7 +69,7 @@ class UntisSession {
   /// refer to [UntisStudentData] iself.
   Future<UntisStudentData> getUserData() async {
     final Map<String, dynamic> json =
-        (await UserDataRequest(apiEndpoint, auth).request())!;
+        (await UserDataRequest(apiEndpoint, _auth).request())!;
     unawaited(_refreshMasterData(json['masterData']));
     return UntisStudentData.fromJson(json['userData']);
   }
@@ -91,7 +87,7 @@ class UntisSession {
     startDate ??= DateTime.now();
     endDate ??= startDate.add(const Duration(days: 356));
 
-    final AbsencesRequest request = AbsencesRequest(apiEndpoint, auth,
+    final AbsencesRequest request = AbsencesRequest(apiEndpoint, _auth,
         startDate, endDate, includeExcuseds, includeUnExcuseds);
     final Map<String, dynamic> json = (await request.request())!;
     return <UntisAbsence>[
@@ -113,7 +109,7 @@ class UntisSession {
     endDate ??= startDate.add(const Duration(days: 7));
 
     final ExamsRequest request = ExamsRequest(
-        apiEndpoint, auth, id ?? (await studentData).id, startDate, endDate);
+        apiEndpoint, _auth, id ?? (await studentData).id, startDate, endDate);
     final Map<String, dynamic> json = (await request.request())!;
     return <UntisExam>[
       for (final Map<String, dynamic> entry in json['exams'])
@@ -135,7 +131,7 @@ class UntisSession {
     endDate ??= startDate.add(const Duration(days: 7));
 
     final HomeworkRequest request = HomeworkRequest(
-        apiEndpoint, auth, id ?? (await studentData).id, startDate, endDate);
+        apiEndpoint, _auth, id ?? (await studentData).id, startDate, endDate);
     final Map<String, dynamic> json = (await request.request())!;
     return <UntisHomework>[
       for (final Map<String, dynamic> entry in json['homeWorks'])
@@ -175,7 +171,7 @@ class UntisSession {
     startDate ??= DateTime.now();
     endDate ??= startDate.add(const Duration(days: 7));
 
-    final TimetableRequest request = TimetableRequest(apiEndpoint, auth,
+    final TimetableRequest request = TimetableRequest(apiEndpoint, _auth,
         id ?? (await studentData).id, masterDataTimestamp, startDate, endDate);
     final Map<String, dynamic> json = (await request.request())!;
     unawaited(_refreshMasterData(json['masterData']));
@@ -289,7 +285,7 @@ class UntisSession {
 
   Future<UntisTimeGrid> _fetchAndCacheMasterData() async {
     final Map<String, dynamic> json =
-        (await UserDataRequest(apiEndpoint, auth).request())!;
+        (await UserDataRequest(apiEndpoint, _auth).request())!;
     await _refreshMasterData(json['masterData']);
     // This thing returns timeGrid because this is always updated.
     // Additionally we need it to set a getter

@@ -63,22 +63,19 @@ class _MyHomePageState extends State<MyHomePage> {
     if (tt != null && grid != null) periods = tt!.groupedPeriods(grid!);
     final List<List<PeriodWidget>> pWidgets = periods
         .map((List<UntisPeriod?> plist) =>
-        plist.map((UntisPeriod? p) => PeriodWidget(period: p)).toList())
+            plist.map((UntisPeriod? p) => PeriodWidget(period: p)).toList())
         .toList();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
       body: GridView.builder(
         // itemCount needs to include all the periods, also null ones
         itemCount: tt != null
             ? periods
-            .map((plist) => plist.length)
-            .reduce((value, element) => value + element)
+                .map((plist) => plist.length)
+                .reduce((value, element) => value + element)
             : 0,
         shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -88,7 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
           final int row = index ~/ grid!.days.length; // Floor division operator
           final int column = index % grid!.days.length;
 
-          return Container( // Make Grid visible (each cell draws border)
+          return Container(
+              // Make Grid visible (each cell draws border)
               decoration: BoxDecoration(
                 border: Border.all(
                   color: Colors.black54,
@@ -109,22 +107,26 @@ class _MyHomePageState extends State<MyHomePage> {
     // https://dartcode.org/docs/using-dart-define-in-flutter/
     const String server = String.fromEnvironment('UNTIS_SERVER');
     if (server.isEmpty) {
-      throw AssertionError('UNTIS_SERVER is not set');
+      throw AssertionError(
+          'Please specify UNTIS_SERVER with --dart-define UNTIS_SERVER=');
     }
     const String school = String.fromEnvironment('UNTIS_SCHOOL');
     if (school.isEmpty) {
-      throw AssertionError('UNTIS_SCHOOL is not set');
+      throw AssertionError(
+          'Please specify UNTIS_SCHOOL with --dart-define UNTIS_SCHOOL=');
     }
     const String username = String.fromEnvironment('UNTIS_USER');
     if (username.isEmpty) {
-      throw AssertionError('UNTIS_USER is not set');
+      throw AssertionError(
+          'Please specify UNTIS_USER with --dart-define UNTIS_USER=');
     }
     const String password = String.fromEnvironment('UNTIS_PASS');
     if (password.isEmpty) {
-      throw AssertionError('UNTIS_PASS is not set');
+      throw AssertionError(
+          'Please specify UNTIS_PASS with --dart-define UNTIS_PASS=');
     }
     final UntisSession s =
-    await UntisSession.init(server, school, username, password);
+        await UntisSession.init(server, school, username, password);
     DateTime date = DateTime.now().subtract(const Duration(days: 14));
     while (date.weekday != 1) {
       date = date.subtract(const Duration(days: 1));
@@ -150,24 +152,22 @@ class PeriodWidget extends StatelessWidget {
           border: Border.all(color: Colors.black12, width: 2),
           borderRadius: BorderRadius.circular(10),
           color:
-          Color(period!.subject!.backColorValue ?? period!.backColorValue),
+              Color(period!.subject!.backColorValue ?? period!.backColorValue),
         ),
         child: Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-              Text(
-                  period!.subjects.isNotEmpty
-                      ? period!.subject!.longName
-                      : period!.text.lesson,
-                  textAlign: TextAlign.center),
-              Text(
-                  period!.teachers.isNotEmpty
-                      ? period!.teacher!.fullName
-                      : "No teacher",
-                  textAlign: TextAlign.center),
-              Text(period!.rooms.isNotEmpty
-                  ? period!.room!.name
-                  : "Not in School",
-                  textAlign: TextAlign.center)
-            ])));
+          Text(
+              period!.subjects.isNotEmpty
+                  ? period!.subject!.longName
+                  : period!.text.lesson,
+              textAlign: TextAlign.center),
+          Text(
+              period!.teachers.isNotEmpty
+                  ? period!.teacher!.fullName
+                  : "No teacher",
+              textAlign: TextAlign.center),
+          Text(period!.rooms.isNotEmpty ? period!.room!.name : "Not in School",
+              textAlign: TextAlign.center)
+        ])));
   }
 }
