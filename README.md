@@ -1,3 +1,6 @@
+[![Pub Package](https://img.shields.io/pub/v/dart_untis_mobile.svg)](https://pub.dev/packages/dart_untis_mobile)
+[![package publisher](https://img.shields.io/pub/publisher/dart_untis_mobile.svg)](https://pub.dev/packages/dart_untis_mobile/publisher)
+
 # dart_untis_mobile
 
 **dart_untis_mobile** is a pure Dart library for the untis mobile API, which provides read-only

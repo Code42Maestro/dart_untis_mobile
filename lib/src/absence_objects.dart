@@ -22,10 +22,10 @@ class UntisExcuse {
   UntisExcuse._(this.id, this.excuseStatus, this.text, this.number, this.date);
 
   /// Parses this object from [json]
-  static Future<UntisExcuse> fromJson(UntisSession s,
-      Map<String, dynamic> json) async {
+  static Future<UntisExcuse> fromJson(
+      UntisSession s, Map<String, dynamic> json) async {
     final UntisExcuseStatus excuseStatus = (await s.excuseStates).firstWhere(
-            (UntisExcuseStatus state) => state.id == json['excuseStatusId']);
+        (UntisExcuseStatus state) => state.id == json['excuseStatusId']);
     return UntisExcuse._(json['id'], excuseStatus, json['text'], json['number'],
         untisDateToDateTime(json['date'])!);
   }
@@ -103,7 +103,8 @@ class UntisAbsence {
   /// A title for the absence, for example the title of a school event
   final String text;
 
-  UntisAbsence._(this.id,
+  UntisAbsence._(
+      this.id,
       this.studentId,
       this.classId,
       this.startDateTime,
@@ -116,8 +117,8 @@ class UntisAbsence {
       this.text);
 
   /// Parses this object from [json]
-  static Future<UntisAbsence> fromJson(UntisSession s,
-      Map<String, dynamic> json) async {
+  static Future<UntisAbsence> fromJson(
+      UntisSession s, Map<String, dynamic> json) async {
     final UntisExcuse? excuse = json['excused'] != null
         ? await UntisExcuse.fromJson(s, json['excused'])
         : null;
