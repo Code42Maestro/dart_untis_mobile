@@ -15,5 +15,5 @@ jobs:
         with:
           publish: true
           pubdev_token: ${{ secrets.CREDENTIAL_BASE64 }}
-          dart_sdk: "3.0.0"
+          sdk: "flutter"
           line_length: 80
