@@ -1,7 +1,7 @@
 name: dart_untis_mobile
 description: "A pure dart library implementing the Untis Mobile API (https://www.untis.at/produkte/webuntis/untis-mobile-app)."
 repository: https://github.com/Code42Maestro/dart_untis_mobile
-version: 1.0.0
+version: 1.0.1
 topics:
   - untis
   - webuntis
