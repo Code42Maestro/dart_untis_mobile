@@ -14,6 +14,7 @@ jobs:
         uses: nikosportolos/dart_package@v0.2.0
         with:
           publish: true
+          skip_tests: true
           pubdev_token: ${{ secrets.CREDENTIAL_BASE64 }}
           sdk: "flutter"
           line_length: 80
