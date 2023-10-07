@@ -15,6 +15,7 @@ jobs:
         with:
           publish: true
           skip_tests: true
+          analyze_directories: "lib"
           pubdev_token: ${{ secrets.CREDENTIAL_BASE64 }}
           sdk: "flutter"
           line_length: 80
