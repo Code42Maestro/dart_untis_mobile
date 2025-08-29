@@ -54,9 +54,16 @@ enum UntisPeriodState {
   cancelled;
 
   /// Parses the name of an enum to the actual enum
-  static UntisPeriodState parse(String typeName) =>
-      UntisPeriodState.values.firstWhere(
-          (UntisPeriodState element) => element.name == typeName.toLowerCase());
+  static UntisPeriodState parse(String typeName) {
+    if(typeName.toLowerCase() == "regular") {
+      return UntisPeriodState.regular;
+    } else if(typeName.toLowerCase() == "irregular") {
+      return UntisPeriodState.irregular;
+    } else if(typeName.toLowerCase() == "cancelled") {
+      return UntisPeriodState.cancelled;
+    }
+    return UntisPeriodState.regular;
+  }
 
   @override
   String toString() => name;
