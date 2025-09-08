@@ -44,97 +44,86 @@ void main() async {
 
 ### Retrieve Homework directly
 
-```dart
+```dart 
+void retrieveHomework(UntisSession session) async {
+  final List<UntisHomework> homework = await session.getHomework();
 
-final List<UntisHomework> homework = await
-session.getHomework
-();
-
-// Use the homework data
-for
-(
-final UntisHomework hw in homework) {
-print('Until: ${hw.endDate}, Task: ${hw.text}');
+  // Use the homework data
+  for (final UntisHomework hw in homework) {
+    print('Until: ${hw.endDate}, Task: ${hw.text}');
+  }
 }
 ```
 
 ### Retrieve Subjects, that are relevant
 
 ```dart
-// Gets the timetable from the current date
-final List<UntisSubject> subjects = await
-session.getCurrentSubjects
-();
+void retrieveRelevantSubjects(UntisSession session) async {
+  // Gets the timetable from the current date
+  final List<UntisSubject> subjects = await session.getCurrentSubjects();
 
-// Inform about the current subjects
-for
-(
-final UntisSubject subject in subjects) {
-print('Subject: ${subject.longName}, short: ${subject.name}');
+  // Inform about the current subjects
+  for (final UntisSubject subject in subjects) {
+    print('Subject: ${subject.longName}, short: ${subject.name}');
+  }
 }
 ```
 
 ### Retrieve Timetable
 
 ```dart
-// Gets the timetable from the current date
-final UntisTimetable timetable = await
-session.getTimetable
-(
-startDate: DateTime.now(),
-endDate: DateTime.now().add(const Duration(days: 7)));
+void retrieveTimetable(UntisSession session) async {
+  // Gets the timetable from the current date
+  final UntisTimetable timetable = await
+  session.getTimetable(startDate: DateTime.now(), endDate: DateTime.now().add(const Duration(days: 7)));
 
-// Use the timetable data 
-for (final UntisPeriod period in timetable.periods) {
-print('Subject: ${period.subject?.longName}, Room: ${period.room?.name}, Teacher: ${period.teacher?.lastName}');
+  // Use the timetable data 
+  for (final UntisPeriod period in timetable.periods) {
+    print('Subject: ${period.subject?.longName}, Room: ${period.room?.name}, Teacher: ${period.teacher?.lastName}');
+  }
 }
 ```
 
 ### Get lessons of this month and filter subject
 
 ```dart
+void retrieveLessonsByMonthAndSubject(UntisSession session) async {
 // Gets the timetable of this month
-final UntisTimetable timetable = await
-session.getTimetable
-(
-startDate: DateTime.now(),
-endDate: DateTime.now().add(const Duration(days: 7 * 4)));
+  final UntisTimetable timetable = await
+  session.getTimetable(startDate: DateTime.now(), endDate: DateTime.now().add(const Duration(days: 7 * 4)));
 
 // Filter out the subject
-final List<UntisPeriod> mathPeriods = timetable.periods
-    .where((UntisPeriod p) => p.subject!.name == 'Ma')
-    .toList();
-final UntisTeacher mathTeacher = mathPeriods.first.teacher!;
-print('You will have math ${mathPeriods.length} times, with ${mathTeacher.fullName}');
+  final List<UntisPeriod> mathPeriods = timetable.periods.where((UntisPeriod p) => p.subject!.name == 'Ma').toList();
+  final UntisTeacher mathTeacher = mathPeriods.first.teacher!;
+  print('You will have math ${mathPeriods.length} times, with ${mathTeacher.fullName}');
+}
 ```
 
 ### Group Timetable by time grid(days)
 
 ```dart
+void categorizeByDay(UntisSession session) async {
+  final UntisTimeGrid timeGrid = await session.timeGrid;
 
-final UntisTimeGrid timegrid = await
-session.timeGrid;
+  // Use Timetable and TimeGrid to group by day
+  final List<List<UntisPeriod?>> days = tt.groupedPeriods(grid);
 
-// Use Timetable and TimeGrid to group by day
-final List<List<UntisPeriod?>> days = tt.groupedPeriods(grid);
-
-// Use this data
-for (
-final UntisPeriod? period in days[0]) {
-if (period == null) {
-print("Nothing here");
-continue;
+  // Use this data
+  for (final UntisPeriod? period in days[0]) {
+    if (period == null) {
+      print("Nothing here");
+      continue;
+    }
+    final int hour = period.startDateTime.hour;
+    final int minute = period.startDateTime.minute;
+    print('Time: $hour:$minute Subject: ${period.subject}');
+  }
 }
-final int hour = period.startDateTime.hour;
-final int minute = period.startDateTime.minute;
-print('Time: $hour:$minute Subject: ${period.subject}');
-}
-
 ```
 
 ## Contributions
 
-There are features, that are not implemented. So please file a issue if you need something or found
+There are features, that are not implemented. So please file an issue if you need something or found
 a bug.
 
 This library is open for contributions :)
