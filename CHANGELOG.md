@@ -1,7 +1,8 @@
 # 1.0.2
 
 * Fixed README.md's formatting
-* Added functional example project
+* Made example project functional
+* Bumped dependencies
 
 # 1.0.1
 
