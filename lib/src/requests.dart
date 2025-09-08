@@ -12,6 +12,10 @@ import 'objects.dart';
 import 'util.dart';
 
 abstract class UntisRequest {
+  UntisRequest(String apiEndpoint, {this.auth}) {
+    this.apiEndpoint = Uri.parse(apiEndpoint.replaceAll('%METHOD%', _method));
+  }
+
   late final Uri apiEndpoint;
   final String _id = '-1';
   final String _jsonrpc = '2.0';
@@ -19,10 +23,6 @@ abstract class UntisRequest {
   abstract final String _method;
   Map<String, dynamic> _params = <String, dynamic>{};
   final UntisAuthentication? auth;
-
-  UntisRequest(String apiEndpoint, {this.auth}) {
-    this.apiEndpoint = Uri.parse(apiEndpoint.replaceAll('%METHOD%', _method));
-  }
 
   Future<Object?> _request() async {
     _params['auth'] = auth;
@@ -56,9 +56,6 @@ abstract class UntisRequest {
 }
 
 class AppSharedSecretRequest extends UntisRequest {
-  @override
-  final String _method = 'getAppSharedSecret';
-
   AppSharedSecretRequest(super.apiEndpoint, String username, String password) {
     super._params = <String, dynamic>{
       'userName': username,
@@ -67,19 +64,22 @@ class AppSharedSecretRequest extends UntisRequest {
   }
 
   @override
+  final String _method = 'getAppSharedSecret';
+
+  @override
   Future<String?> request() async {
     return (await super._request()) as String?;
   }
 }
 
 class UserDataRequest extends UntisRequest {
-  @override
-  final String _method = 'getUserData2017';
-
   UserDataRequest(super.apiEndpoint, UntisAuthentication auth)
       : super(auth: auth) {
     super._params = <String, dynamic>{'deviceOs': '', 'elementId': 0};
   }
+
+  @override
+  final String _method = 'getUserData2017';
 
   @override
   Future<Map<String, dynamic>?> request() async {
@@ -90,9 +90,6 @@ class UserDataRequest extends UntisRequest {
 }
 
 class AbsencesRequest extends UntisRequest {
-  @override
-  final String _method = 'getStudentAbsences2017';
-
   /// If startDate lies more in the Future than endDate,
   /// endDate will be startDate + 356days
   AbsencesRequest(
@@ -114,6 +111,9 @@ class AbsencesRequest extends UntisRequest {
   }
 
   @override
+  final String _method = 'getStudentAbsences2017';
+
+  @override
   Future<Map<String, dynamic>?> request() async {
     final Map<String, dynamic>? json =
         (await super._request()) as Map<String, dynamic>?;
@@ -122,9 +122,6 @@ class AbsencesRequest extends UntisRequest {
 }
 
 class ExamsRequest extends UntisRequest {
-  @override
-  final String _method = 'getExams2017';
-
   /// If startDate lies more in the Future than endDate,
   /// endDate will be startDate + 7days
   ExamsRequest(super.apiEndpoint, UntisAuthentication auth,
@@ -141,6 +138,9 @@ class ExamsRequest extends UntisRequest {
   }
 
   @override
+  final String _method = 'getExams2017';
+
+  @override
   Future<Map<String, dynamic>?> request() async {
     final Map<String, dynamic>? json =
         (await super._request()) as Map<String, dynamic>?;
@@ -149,9 +149,6 @@ class ExamsRequest extends UntisRequest {
 }
 
 class HomeworkRequest extends UntisRequest {
-  @override
-  final String _method = 'getHomeWork2017';
-
   /// If startDate lies more in the Future than endDate,
   /// endDate will be startDate + 7days
   HomeworkRequest(super.apiEndpoint, UntisAuthentication auth,
@@ -168,6 +165,9 @@ class HomeworkRequest extends UntisRequest {
   }
 
   @override
+  final String _method = 'getHomeWork2017';
+
+  @override
   Future<Map<String, dynamic>?> request() async {
     final Map<String, dynamic>? json =
         (await super._request()) as Map<String, dynamic>?;
@@ -176,9 +176,6 @@ class HomeworkRequest extends UntisRequest {
 }
 
 class TimetableRequest extends UntisRequest {
-  @override
-  final String _method = 'getTimetable2017';
-
   /// masterDataTimestamp will tell the Untis API if current masterData is
   /// up to date, if not it will send an update
   /// If startDate lies more in the Future than endDate,
@@ -204,6 +201,9 @@ class TimetableRequest extends UntisRequest {
       'timetableTimestamps': <int>[for (int i = 0; i < dateDiff.inDays; i++) 0]
     };
   }
+
+  @override
+  final String _method = 'getTimetable2017';
 
   @override
   Future<Map<String, dynamic>?> request() async {

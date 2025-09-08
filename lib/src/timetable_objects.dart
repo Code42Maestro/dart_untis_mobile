@@ -8,6 +8,13 @@ import 'util.dart';
 /// This is can include the period title. Furthermore it can include notes
 /// from the teacher. It is also used to describe the name of e.g. a class trip
 class UntisPeriodText {
+  /// Parses this object from [json]
+  UntisPeriodText.fromJson(Map<String, dynamic> json)
+      : lesson = json['lesson'],
+        substitution = json['substitution'],
+        notes = json['info'],
+        attachments = json['attachments'];
+
   /// This used for a title, when period is a irregular lesson
   ///
   /// If this period represents a class trip,
@@ -25,13 +32,6 @@ class UntisPeriodText {
 
   /// Unknown what this is, always null?
   final List<dynamic> attachments;
-
-  /// Parses this object from [json]
-  UntisPeriodText.fromJson(Map<String, dynamic> json)
-      : lesson = json['lesson'],
-        substitution = json['substitution'],
-        notes = json['info'],
-        attachments = json['attachments'];
 
   @override
   String toString() => <String, dynamic>{
@@ -64,6 +64,24 @@ enum UntisPeriodState {
 
 /// This can be a lesson, a class trip or in general a part of the timetable
 class UntisPeriod {
+  UntisPeriod._(
+      this.id,
+      this.lessonId,
+      this.startDateTime,
+      this.endDateTime,
+      this.foreColorValue,
+      this.backColorValue,
+      this.innerForeColorValue,
+      this.innerBackColorValue,
+      this.text,
+      this.rights,
+      this.states,
+      this.homeworks,
+      this.messengerChannel,
+      this.exam,
+      this.isOnlinePeriod,
+      this.blockHash);
+
   /// Defines the id of the period, so at this point in time
   final int id;
 
@@ -230,24 +248,6 @@ class UntisPeriod {
   /// the same [blockHash]
   final int blockHash;
 
-  UntisPeriod._(
-      this.id,
-      this.lessonId,
-      this.startDateTime,
-      this.endDateTime,
-      this.foreColorValue,
-      this.backColorValue,
-      this.innerForeColorValue,
-      this.innerBackColorValue,
-      this.text,
-      this.rights,
-      this.states,
-      this.homeworks,
-      this.messengerChannel,
-      this.exam,
-      this.isOnlinePeriod,
-      this.blockHash);
-
   static Future<void> _setElementFields<T>(
       Iterable<dynamic> json,
       Future<T?> Function(int) getElementFromId,
@@ -363,6 +363,9 @@ class UntisPeriod {
 ///
 /// Additionally the [displayableStartDate] and [displayableEndDate]
 class UntisTimetable {
+  UntisTimetable._(
+      this.displayableStartDate, this.displayableEndDate, this.periods);
+
   /// The start date from where there are lessons
   final DateTime displayableStartDate;
 
@@ -397,9 +400,6 @@ class UntisTimetable {
 
   /// The actual periods(lessons/lesson blocks) just sorted by startDate
   final List<UntisPeriod> periods;
-
-  UntisTimetable._(
-      this.displayableStartDate, this.displayableEndDate, this.periods);
 
   /// Parses this object from [json]
   ///

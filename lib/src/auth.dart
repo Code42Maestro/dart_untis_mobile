@@ -7,6 +7,13 @@ import 'package:crypto/crypto.dart';
 // ignore_for_file: public_member_api_docs
 
 class UntisAuthentication {
+  /// This constructor uses [DateTime.now()] to calculate an opt code
+  UntisAuthentication.currentTime(String? username, String? appSharedSecret)
+      : _username = username ?? _defaultUser {
+    _clientTime = DateTime.now().millisecondsSinceEpoch;
+    _otp = _createTimeBasedCode(_clientTime, appSharedSecret);
+  }
+
   static const String _defaultUser = '#anonymous#';
 
   final String _username;
@@ -18,13 +25,6 @@ class UntisAuthentication {
         'otp': _otp,
         'clientTime': _clientTime
       };
-
-  /// This constructor uses [DateTime.now()] to calculate an opt code
-  UntisAuthentication.currentTime(String? username, String? appSharedSecret)
-      : _username = username ?? _defaultUser {
-    _clientTime = DateTime.now().millisecondsSinceEpoch;
-    _otp = _createTimeBasedCode(_clientTime, appSharedSecret);
-  }
 
   static int _verifyCode(Uint8List key, int time) {
     int j = time; // time is the initialization vector

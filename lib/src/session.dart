@@ -9,6 +9,11 @@ import 'util.dart';
 
 /// The main object to interact with the Untis Mobile API
 class UntisSession {
+  UntisSession._(String server, String school, this.username, this._password)
+      : apiEndpoint = apiTemplate
+            .replaceAll('%SRV%', server)
+            .replaceAll('%SCHOOL%', school);
+
   /// The api endpoint, i. e. [apiTemplate], replaced with values
   final String apiEndpoint;
 
@@ -39,11 +44,6 @@ class UntisSession {
   /// In this version the url remains static between every method request
   static const String apiTemplate =
       'https://%SRV%/WebUntis/jsonrpc_intern.do?school=%SCHOOL%';
-
-  UntisSession._(String server, String school, this.username, this._password)
-      : apiEndpoint = apiTemplate
-            .replaceAll('%SRV%', server)
-            .replaceAll('%SCHOOL%', school);
 
   /// The only way to construct a instance of UntisSession.
   ///

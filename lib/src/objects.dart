@@ -21,10 +21,10 @@ enum UntisElementType {
   /// Id type for [UntisRoom]
   room('ROOM');
 
+  const UntisElementType(this.name);
+
   /// The untis name for this element
   final String name;
-
-  const UntisElementType(this.name);
 
   /// Parses the untis name of an [UntisElementType] to
   /// the actual [UntisElementType]
@@ -36,12 +36,6 @@ enum UntisElementType {
 
 /// Used to describe common elements of the API
 class UntisElementDescriptor extends Equatable {
-  /// The type of this descriptor, for example class
-  final UntisElementType type;
-
-  /// The actual id as a number
-  final int id;
-
   /// Constructs new instance with [type] and [id]
   const UntisElementDescriptor(this.type, this.id);
 
@@ -49,6 +43,12 @@ class UntisElementDescriptor extends Equatable {
   UntisElementDescriptor.fromJson(Map<String, dynamic> json)
       : id = json['id'] ?? json['elemId'],
         type = UntisElementType.parse(json['name'] ?? json['elemType']);
+
+  /// The type of this descriptor, for example class
+  final UntisElementType type;
+
+  /// The actual id as a number
+  final int id;
 
   @override
   String toString() =>
@@ -67,6 +67,16 @@ class UntisElementDescriptor extends Equatable {
 /// I encountered [children], [departmentId] and [classIds] to not be used
 /// with my untis account at my school.
 class UntisStudentData {
+  /// Parses this object from [json]
+  UntisStudentData.fromJson(Map<String, dynamic> json)
+      : id = UntisElementDescriptor.fromJson(json),
+        displayName = json['displayName'],
+        username = json['schoolName'],
+        departmentId = json['departmentId'],
+        children = json['children'],
+        classIds = json['klassenIds'],
+        rights = json['rights'];
+
   /// The id of the student at this school
   final UntisElementDescriptor id;
 
@@ -96,16 +106,6 @@ class UntisStudentData {
   /// An overview of the rights, that a user has
   final List<dynamic> rights;
 
-  /// Parses this object from [json]
-  UntisStudentData.fromJson(Map<String, dynamic> json)
-      : id = UntisElementDescriptor.fromJson(json),
-        displayName = json['displayName'],
-        username = json['schoolName'],
-        departmentId = json['departmentId'],
-        children = json['children'],
-        classIds = json['klassenIds'],
-        rights = json['rights'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -124,6 +124,13 @@ class UntisStudentData {
 ///
 /// For example, cleaning, class boss and former class boss
 class UntisDuty {
+  /// Parses this object from [json]
+  UntisDuty.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        type = json['type'];
+
   /// The id for the individual [UntisDuty], which may be referred to
   /// from other teacher functions
   final int id;
@@ -138,13 +145,6 @@ class UntisDuty {
   ///
   /// I encountered there to be 3, STEWARD, PREFECT and PREFECT_SUBST
   final String type;
-
-  /// Parses this object from [json]
-  UntisDuty.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        type = json['type'];
 
   @override
   String toString() => <String, dynamic>{
@@ -164,6 +164,15 @@ class UntisDuty {
 /// For the whole class there are these, instruction(indoctrination) or the
 /// messaging of the current grades.
 class UntisEventReason {
+  /// Parses this object from [json]
+  UntisEventReason.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        elementType = UntisElementType.parse(json['elementType']),
+        groupId = json['groupId'],
+        active = json['active'];
+
   /// The id for the individual [UntisEventReason], which may be referred to
   /// from other teacher functions
   final int id;
@@ -184,15 +193,6 @@ class UntisEventReason {
   /// Whether this event reason is still in use
   final bool active;
 
-  /// Parses this object from [json]
-  UntisEventReason.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        elementType = UntisElementType.parse(json['elementType']),
-        groupId = json['groupId'],
-        active = json['active'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -209,6 +209,13 @@ class UntisEventReason {
 ///
 /// These are usually, notice, participation in sports and material and homework
 class UntisEventReasonGroup {
+  /// Parses this object from [json]
+  UntisEventReasonGroup.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        active = json['active'];
+
   /// The id for the individual [UntisEventReasonGroup], to refer to from
   /// [UntisEventReason]. This is usually 1, 2 or 3
   final int id;
@@ -222,13 +229,6 @@ class UntisEventReasonGroup {
   /// Whether this event reason group is still in use
   final bool active;
 
-  /// Parses this object from [json]
-  UntisEventReasonGroup.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        active = json['active'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -240,6 +240,14 @@ class UntisEventReasonGroup {
 
 /// A time period, where you don't have school
 class UntisHoliday {
+  /// Parses this object from [json]
+  UntisHoliday.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        startDate = untisDateToDateTime(json['startDate'])!,
+        endDate = untisDateToDateTime(json['endDate'])!;
+
   /// The id of the individual [UntisHoliday]
   final int id;
 
@@ -255,14 +263,6 @@ class UntisHoliday {
   /// The end date, of the school-less period
   final DateTime endDate;
 
-  /// Parses this object from [json]
-  UntisHoliday.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        startDate = untisDateToDateTime(json['startDate'])!,
-        endDate = untisDateToDateTime(json['endDate'])!;
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -275,6 +275,21 @@ class UntisHoliday {
 
 /// A school class
 class UntisClass {
+  /// Parses this object from [json]
+  UntisClass.fromJson(Map<String, dynamic> json)
+      : id = UntisElementDescriptor(UntisElementType.classElement, json['id']),
+        name = json['name'],
+        longName = json['longName'],
+        departmentId = json['departmentId'],
+        startDate = untisDateToDateTime(json['startDate'])!,
+        // Just hope this above is never null lol
+        endDate = untisDateToDateTime(json['endDate'])!,
+        // Just hope this is above never null lol
+        foreColor = json['foreColor'],
+        backColor = json['backColor'],
+        active = json['active'],
+        displayable = json['displayable'];
+
   /// The id of the individual [UntisHoliday]
   final UntisElementDescriptor id;
 
@@ -308,21 +323,6 @@ class UntisClass {
   /// Whether the timetable of this class can be accessed from the user
   final bool displayable;
 
-  /// Parses this object from [json]
-  UntisClass.fromJson(Map<String, dynamic> json)
-      : id = UntisElementDescriptor(UntisElementType.classElement, json['id']),
-        name = json['name'],
-        longName = json['longName'],
-        departmentId = json['departmentId'],
-        startDate = untisDateToDateTime(json['startDate'])!,
-        // Just hope this above is never null lol
-        endDate = untisDateToDateTime(json['endDate'])!,
-        // Just hope this is above never null lol
-        foreColor = json['foreColor'],
-        backColor = json['backColor'],
-        active = json['active'],
-        displayable = json['displayable'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -340,6 +340,17 @@ class UntisClass {
 
 /// A class/school room
 class UntisRoom {
+  /// Parses this object from [json]
+  UntisRoom.fromJson(Map<String, dynamic> json)
+      : id = UntisElementDescriptor(UntisElementType.room, json['id']),
+        name = json['name'],
+        longName = json['longName'],
+        departmentId = json['departmentId'],
+        foreColor = json['foreColor'],
+        backColor = json['backColor'],
+        active = json['active'],
+        displayAllowed = json['displayAllowed'];
+
   /// The id of the individual [UntisRoom]
   final UntisElementDescriptor id;
 
@@ -368,17 +379,6 @@ class UntisRoom {
   /// person is using this room at a specific time
   final bool displayAllowed;
 
-  /// Parses this object from [json]
-  UntisRoom.fromJson(Map<String, dynamic> json)
-      : id = UntisElementDescriptor(UntisElementType.room, json['id']),
-        name = json['name'],
-        longName = json['longName'],
-        departmentId = json['departmentId'],
-        foreColor = json['foreColor'],
-        backColor = json['backColor'],
-        active = json['active'],
-        displayAllowed = json['displayAllowed'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -394,6 +394,21 @@ class UntisRoom {
 
 /// A school subject
 class UntisSubject extends Equatable {
+  /// Parses this object from [json]
+  UntisSubject.fromJson(Map<String, dynamic> json)
+      : id = UntisElementDescriptor(UntisElementType.subject, json['id']),
+        name = json['name'],
+        longName = json['longName'],
+        departmentIds = json['departmentIds'],
+        foreColorValue = json['foreColor'] != null
+            ? colorValueFromHex(json['foreColor'])
+            : null,
+        backColorValue = json['backColor'] != null
+            ? colorValueFromHex(json['backColor'])
+            : null,
+        active = json['active'],
+        displayAllowed = json['displayAllowed'];
+
   /// The id of the individual [UntisSubject]
   final UntisElementDescriptor id;
 
@@ -424,21 +439,6 @@ class UntisSubject extends Equatable {
   /// teachers are teaching this subject.
   final bool displayAllowed;
 
-  /// Parses this object from [json]
-  UntisSubject.fromJson(Map<String, dynamic> json)
-      : id = UntisElementDescriptor(UntisElementType.subject, json['id']),
-        name = json['name'],
-        longName = json['longName'],
-        departmentIds = json['departmentIds'],
-        foreColorValue = json['foreColor'] != null
-            ? colorValueFromHex(json['foreColor'])
-            : null,
-        backColorValue = json['backColor'] != null
-            ? colorValueFromHex(json['backColor'])
-            : null,
-        active = json['active'],
-        displayAllowed = json['displayAllowed'];
-
   @override
   List<Object?> get props => <Object?>[id];
 
@@ -457,6 +457,20 @@ class UntisSubject extends Equatable {
 
 /// A school teacher
 class UntisTeacher {
+  /// Parses this object from [json]
+  UntisTeacher.fromJson(Map<String, dynamic> json)
+      : id = UntisElementDescriptor(UntisElementType.teacher, json['id']),
+        name = json['name'],
+        firstName = json['firstName'],
+        lastName = json['lastName'],
+        departmentIds = json['departmentIds'],
+        foreColor = json['foreColor'],
+        backColor = json['backColor'],
+        entryDate = untisDateToDateTime(json['entryDate']),
+        exitDate = untisDateToDateTime(json['exitDate']),
+        active = json['active'],
+        displayAllowed = json['displayAllowed'];
+
   /// The id of the individual [UntisTeacher]
   final UntisElementDescriptor id;
 
@@ -497,20 +511,6 @@ class UntisTeacher {
   /// the subjects a teacher is teaching.
   final bool displayAllowed;
 
-  /// Parses this object from [json]
-  UntisTeacher.fromJson(Map<String, dynamic> json)
-      : id = UntisElementDescriptor(UntisElementType.teacher, json['id']),
-        name = json['name'],
-        firstName = json['firstName'],
-        lastName = json['lastName'],
-        departmentIds = json['departmentIds'],
-        foreColor = json['foreColor'],
-        backColor = json['backColor'],
-        entryDate = untisDateToDateTime(json['entryDate']),
-        exitDate = untisDateToDateTime(json['exitDate']),
-        active = json['active'],
-        displayAllowed = json['displayAllowed'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -529,6 +529,13 @@ class UntisTeacher {
 
 /// A school year
 class UntisYear {
+  /// Parses this object from [json]
+  UntisYear.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        startDate = untisDateToDateTime(json['startDate'])!,
+        endDate = untisDateToDateTime(json['endDate'])!;
+
   /// The id of the individual [UntisYear]
   final int id;
 
@@ -540,13 +547,6 @@ class UntisYear {
 
   /// The end of the school year, usually directly before summer holiday
   final DateTime endDate;
-
-  /// Parses this object from [json]
-  UntisYear.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        startDate = untisDateToDateTime(json['startDate'])!,
-        endDate = untisDateToDateTime(json['endDate'])!;
 
   @override
   String toString() => <String, dynamic>{
@@ -562,6 +562,12 @@ class UntisYear {
 /// This is essentially just a implementation without data,
 /// to show when a period/lesson typically(according the [UntisTimeGrid]) starts or ends
 class UntisDayUnit {
+  /// Parses this object from [json]
+  UntisDayUnit.fromJson(Map<String, dynamic> json)
+      : label = json['label'],
+        startTime = untisTimeToTimeOfDay(json['startTime'])!,
+        endTime = untisTimeToTimeOfDay(json['endTime'])!;
+
   /// Don't know what this is used for
   final String label;
 
@@ -570,12 +576,6 @@ class UntisDayUnit {
 
   /// The ending time of a lesson
   final DateTime endTime;
-
-  /// Parses this object from [json]
-  UntisDayUnit.fromJson(Map<String, dynamic> json)
-      : label = json['label'],
-        startTime = untisTimeToTimeOfDay(json['startTime'])!,
-        endTime = untisTimeToTimeOfDay(json['endTime'])!;
 
   @override
   String toString() => <String, dynamic>{
@@ -589,6 +589,15 @@ class UntisDayUnit {
 ///
 /// The [UntisDayUnit]s represent each day, so the columns
 class UntisDay {
+  /// Parses this object from [json]
+  UntisDay.fromJson(Map<String, dynamic> json)
+      : dayLabel = json['day'],
+        weekday = untisWeekDayToDateTimeWeekDay(json['day']),
+        units = <UntisDayUnit>[
+          for (Map<String, dynamic> dayUnit in json['units'])
+            UntisDayUnit.fromJson(dayUnit)
+        ];
+
   /// Weekday in format of "MON", "TUE"...
   final String dayLabel;
 
@@ -601,15 +610,6 @@ class UntisDay {
 
   /// The units or lesson placeholder on this day
   final List<UntisDayUnit> units;
-
-  /// Parses this object from [json]
-  UntisDay.fromJson(Map<String, dynamic> json)
-      : dayLabel = json['day'],
-        weekday = untisWeekDayToDateTimeWeekDay(json['day']),
-        units = <UntisDayUnit>[
-          for (Map<String, dynamic> dayUnit in json['units'])
-            UntisDayUnit.fromJson(dayUnit)
-        ];
 
   @override
   String toString() => <String, dynamic>{
@@ -625,14 +625,14 @@ class UntisDay {
 /// NOTE: [UntisTimeGrid] does not provide any data on which lessons/rooms/subjects there are,
 /// please refer to [UntisTimetable] for that
 class UntisTimeGrid {
-  /// The actual days, this is usually the length 5 - Monday to Friday
-  final List<UntisDay> days;
-
   /// Parses this object from [json]
   UntisTimeGrid.fromJson(Map<String, dynamic> json)
       : days = <UntisDay>[
           for (Map<String, dynamic> day in json['days']) UntisDay.fromJson(day)
         ];
+
+  /// The actual days, this is usually the length 5 - Monday to Friday
+  final List<UntisDay> days;
 
   @override
   String toString() => <String, dynamic>{'days': days}.toString();
@@ -641,6 +641,17 @@ class UntisTimeGrid {
 /// A homework, that can be contained in a [UntisPeriod] or be found directly
 /// with the adequate method in [UntisSession]
 class UntisHomework {
+  /// Parses this object from [json]
+  UntisHomework.fromJson(Map<String, dynamic> json, [this.period])
+      : id = json['id'],
+        lessonId = json['lessonId'],
+        startDate = untisDateToDateTime(json['startDate'])!,
+        endDate = untisDateToDateTime(json['endDate'])!,
+        text = json['text'],
+        remark = json['remark'],
+        completed = json['completed'],
+        attachments = json['attachments'];
+
   /// The id of the individual [UntisHomework]
   final int id;
 
@@ -674,17 +685,6 @@ class UntisHomework {
   /// Attachments, I never encountered this, so always []?
   final List<dynamic> attachments;
 
-  /// Parses this object from [json]
-  UntisHomework.fromJson(Map<String, dynamic> json, [this.period])
-      : id = json['id'],
-        lessonId = json['lessonId'],
-        startDate = untisDateToDateTime(json['startDate'])!,
-        endDate = untisDateToDateTime(json['endDate'])!,
-        text = json['text'],
-        remark = json['remark'],
-        completed = json['completed'],
-        attachments = json['attachments'];
-
   @override
   String toString() => <String, dynamic>{
         'id': id,
@@ -702,9 +702,9 @@ class UntisHomework {
 // TODO(Code42Maestro): Implement UntisExam
 /// A school exam, which can be written from more than one class
 class UntisExam {
-  /// The id of an individual [UntisExam]
-  final int id;
-
   /// Parses this object from [json]
   UntisExam.fromJson(Map<String, dynamic> json) : id = json['id'];
+
+  /// The id of an individual [UntisExam]
+  final int id;
 }

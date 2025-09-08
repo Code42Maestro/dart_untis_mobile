@@ -4,6 +4,8 @@ import 'util.dart';
 /// The actual excuse for an [UntisAbsence], it contains a reference
 /// to a [UntisExcuseStatus].
 class UntisExcuse {
+  UntisExcuse._(this.id, this.excuseStatus, this.text, this.number, this.date);
+
   /// ID to track this individual excuse
   final int id;
 
@@ -18,8 +20,6 @@ class UntisExcuse {
 
   /// The date for when this excuse is valid
   final DateTime date;
-
-  UntisExcuse._(this.id, this.excuseStatus, this.text, this.number, this.date);
 
   /// Parses this object from [json]
   static Future<UntisExcuse> fromJson(
@@ -40,6 +40,14 @@ class UntisExcuse {
 /// This is a general status, that can be used with every [UntisExcuse].
 /// [UntisExcuse] is the concrete excuse, which contains a reference to this
 class UntisExcuseStatus {
+  /// Parses this object from [json]
+  UntisExcuseStatus.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        excused = json['excused'],
+        active = json['active'];
+
   /// ID for referred to from a [UntisExcuse]
   final int id;
 
@@ -54,14 +62,6 @@ class UntisExcuseStatus {
 
   /// Unknown what this is, always true?
   final bool active;
-
-  /// Parses this object from [json]
-  UntisExcuseStatus.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        excused = json['excused'],
-        active = json['active'];
 }
 
 /// An absence of a student
@@ -70,6 +70,19 @@ class UntisExcuseStatus {
 /// Additionally contains [UntisAbsenceReason] and sometimes a title,
 /// for example for a school event.
 class UntisAbsence {
+  UntisAbsence._(
+      this.id,
+      this.studentId,
+      this.classId,
+      this.startDateTime,
+      this.endDateTime,
+      this.owner,
+      this.excused,
+      this.excuse,
+      this.reason,
+      this.reasonText,
+      this.text);
+
   /// ID for the individual absence
   final int id;
 
@@ -103,19 +116,6 @@ class UntisAbsence {
   /// A title for the absence, for example the title of a school event
   final String text;
 
-  UntisAbsence._(
-      this.id,
-      this.studentId,
-      this.classId,
-      this.startDateTime,
-      this.endDateTime,
-      this.owner,
-      this.excused,
-      this.excuse,
-      this.reason,
-      this.reasonText,
-      this.text);
-
   /// Parses this object from [json]
   static Future<UntisAbsence> fromJson(
       UntisSession s, Map<String, dynamic> json) async {
@@ -145,6 +145,13 @@ class UntisAbsence {
 /// This can be illness, school event, furlough(granted vacation), delay
 /// This is a necessity for [UntisAbsence], but [UntisExcuseStatus] is not.
 class UntisAbsenceReason {
+  /// Parses this object from [json]
+  UntisAbsenceReason.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        name = json['name'],
+        longName = json['longName'],
+        active = json['active'];
+
   /// ID for referred to from a [UntisAbsence]
   final int id;
 
@@ -156,11 +163,4 @@ class UntisAbsenceReason {
 
   /// Unknown what this is, always true?
   final bool active;
-
-  /// Parses this object from [json]
-  UntisAbsenceReason.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        longName = json['longName'],
-        active = json['active'];
 }
