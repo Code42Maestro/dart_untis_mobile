@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dart_untis_mobile/dart_untis_mobile.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,18 @@ import 'package:flutter/material.dart';
 // ignore_for_file: public_member_api_docs
 
 void main() {
+  //HttpOverrides.global = new DevHttpOverrides();
+
   runApp(const MyApp());
+}
+
+class DevHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(final SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -127,14 +139,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     final UntisSession s =
         await UntisSession.init(server, school, username, password);
-    DateTime date = DateTime.now().subtract(const Duration(days: 14));
+    DateTime date = DateTime.now().subtract(const Duration(days: 6));
     while (date.weekday != 1) {
-      date = date.subtract(const Duration(days: 1));
+      date = date.add(const Duration(days: 1));
     }
     grid = await s.timeGrid;
     tt = await s.getTimetable(
       startDate: date,
-      endDate: date.add(const Duration(days: 1)),
+      endDate: date.add(const Duration(days: 7)),
     );
   }
 }

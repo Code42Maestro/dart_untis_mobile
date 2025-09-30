@@ -51,12 +51,21 @@ enum UntisPeriodState {
   irregular,
 
   /// this period is cancelled
-  cancelled;
+  cancelled,
+
+  /// This period is representative for writing an exam
+  exam;
 
   /// Parses the name of an enum to the actual enum
-  static UntisPeriodState parse(String typeName) =>
-      UntisPeriodState.values.firstWhere(
-          (UntisPeriodState element) => element.name == typeName.toLowerCase());
+  static UntisPeriodState parse(String typeName) {
+    final UntisPeriodState? st = UntisPeriodState.values
+        .where((UntisPeriodState element) =>
+            element.name == typeName.toLowerCase())
+        .firstOrNull;
+    if (st == null) print("Discovered new UntisPeriodState: " + typeName);
+
+    return st ?? regular;
+  }
 
   @override
   String toString() => name;
