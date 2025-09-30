@@ -239,11 +239,11 @@ class UntisPeriod {
   /// Unknown what this is, always null?
   final dynamic messengerChannel;
 
-  /// Unknown what this is, always null?
-  // TODO(Code42Maestro): Implement [UntisExam] here
-  final dynamic exam;
+  /// Used for specifying if and what exam is going to be written in this period
+  final UntisExam? exam;
 
   /// Unknown what this is, always false?
+  /// Maybe it was used for managing periods in home-schooling
   final bool isOnlinePeriod;
 
   /// Hash for indicating a consecutive period/a block. A lesson block is for example two consecutive lessons
@@ -306,7 +306,7 @@ class UntisPeriod {
             UntisHomework.fromJson(entry)
         ],
         json['messengerChannel'],
-        json['exam'],
+        json['exam'] == null ? null : UntisExam.fromJson(json['exam']),
         json['isOnlinePeriod'],
         json['blockHash']);
 

@@ -6,5 +6,6 @@ void main() {
     expect(UntisPeriodState.parse('regular'), UntisPeriodState.regular);
     expect(UntisPeriodState.parse('irregular'), UntisPeriodState.irregular);
     expect(UntisPeriodState.parse('cancelled'), UntisPeriodState.cancelled);
+    expect(UntisPeriodState.parse('unknown'), UntisPeriodState.regular);
   });
 }

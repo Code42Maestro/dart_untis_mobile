@@ -700,11 +700,25 @@ class UntisHomework {
 }
 
 // TODO(Code42Maestro): Implement UntisExam
+//"exam":{"id":482,"examtype":"Klassenarbeit","name":"Ge gA (Bür)","text":"Bür"}
 /// A school exam, which can be written from more than one class
 class UntisExam {
   /// Parses this object from [json]
-  UntisExam.fromJson(Map<String, dynamic> json) : id = json['id'];
+  UntisExam.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        examType = json['examtype'],
+        name = json['name'],
+        text = json['text'];
 
   /// The id of an individual [UntisExam]
   final int id;
+
+  /// ExamType is mostly just "Klassenarbeit"
+  final String examType;
+
+  /// Mostly just the name of the course and the teacher's short name.
+  final String name;
+
+  /// Mostly just the teacher's short name
+  final String text;
 }

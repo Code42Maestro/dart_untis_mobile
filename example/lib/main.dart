@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 // ignore_for_file: public_member_api_docs
 
 void main() {
-  //HttpOverrides.global = new DevHttpOverrides();
+  HttpOverrides.global = new DevHttpOverrides();
 
   runApp(const MyApp());
 }
@@ -163,8 +163,10 @@ class PeriodWidget extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black12, width: 2),
           borderRadius: BorderRadius.circular(10),
-          color:
-              Color(period!.subject!.backColorValue ?? period!.backColorValue),
+          color: period!.states.contains(UntisPeriodState.exam)
+              ? Color(period!.backColorValue)
+              : Color(
+                  period!.subject!.backColorValue ?? period!.backColorValue),
         ),
         child: Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
