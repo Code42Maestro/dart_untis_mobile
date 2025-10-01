@@ -100,7 +100,7 @@ class AbsencesRequest extends UntisRequest {
       bool includeExcused,
       bool includeUnExcused)
       : super(auth: auth) {
-    final Duration dateDiff = startDate.difference(endDate);
+    final Duration dateDiff = endDate.difference(startDate);
     if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 356));
     super._params = <String, dynamic>{
       'startDate': dateTimeToUntisDate(startDate),
@@ -127,7 +127,7 @@ class ExamsRequest extends UntisRequest {
   ExamsRequest(super.apiEndpoint, UntisAuthentication auth,
       UntisElementDescriptor id, DateTime startDate, DateTime endDate)
       : super(auth: auth) {
-    final Duration dateDiff = startDate.difference(endDate);
+    final Duration dateDiff = endDate.difference(startDate);
     if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
     super._params = <String, dynamic>{
       'id': id.id,
@@ -154,7 +154,7 @@ class HomeworkRequest extends UntisRequest {
   HomeworkRequest(super.apiEndpoint, UntisAuthentication auth,
       UntisElementDescriptor id, DateTime startDate, DateTime endDate)
       : super(auth: auth) {
-    final Duration dateDiff = startDate.difference(endDate);
+    final Duration dateDiff = endDate.difference(startDate);
     if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
     super._params = <String, dynamic>{
       'id': id.id,
@@ -188,7 +188,7 @@ class TimetableRequest extends UntisRequest {
       DateTime startDate,
       DateTime endDate)
       : super(auth: auth) {
-    final Duration dateDiff = startDate.difference(endDate);
+    final Duration dateDiff = endDate.difference(startDate);
     if (dateDiff.isNegative) endDate = startDate.add(const Duration(days: 7));
 
     super._params = <String, dynamic>{
@@ -198,7 +198,7 @@ class TimetableRequest extends UntisRequest {
       'endDate': dateTimeToUntisDate(endDate),
       'masterDataTimestamp': masterDataTimestamp,
       'timetableTimestamp': 0,
-      'timetableTimestamps': <int>[for (int i = 0; i < dateDiff.inDays; i++) 0]
+      'timetableTimestamps': <int>[]
     };
   }
 

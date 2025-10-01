@@ -699,16 +699,76 @@ class UntisHomework {
       }.toString();
 }
 
-// TODO(Code42Maestro): Implement UntisExam
+// In a timetable:
 //"exam":{"id":482,"examtype":"Klassenarbeit","name":"Ge gA (Bür)","text":"Bür"}
+// Via getExams()
+// {
+//         "id": 482,
+//         "examType": "Klassenarbeit",
+//         "startDateTime": "2025-10-06T11:15Z",
+//         "endDateTime": "2025-10-06T12:45Z",
+//         "departmentId": 0,
+//         "subjectId": 467,
+//         "klasseIds": [
+//           1446
+//         ],
+//         "roomIds": [
+//           112
+//         ],
+//         "teacherIds": [
+//           132
+//         ],
+//         "invigilators": [
+//           {
+//             "id": 132,
+//             "startTime": "T11:15",
+//             "endTime": "T12:45"
+//           }
+//         ],
+//         "name": "Ge gA (Bür)",
+//         "text": "Bür"
+//       }
 /// A school exam, which can be written from more than one class
 class UntisExam {
   /// Parses this object from [json]
   UntisExam.fromJson(Map<String, dynamic> json)
       : id = json['id'],
-        examType = json['examtype'],
+        examType =
+            json.containsKey('examtype') ? json['examtype'] : json['examType'],
         name = json['name'],
-        text = json['text'];
+        text = json['text'],
+        startDateTime = untisDateTimeToDateTime(json['startDateTime']),
+        endDateTime = untisDateTimeToDateTime(json['endDateTime']),
+        departmentId = json['departmentId'],
+        subjectId = json['subjectId'],
+        classIds = json['klasseIds'] != null
+            ? <int>[
+                for (final dynamic number in json['klasseIds']) number as int
+              ]
+            : null,
+        roomIds = json['roomIds'] != null
+            ? <int>[
+                for (final dynamic number in json['klasseIds']) number as int
+              ]
+            : null,
+        teacherIds = json['teacherIds'] != null
+            ? <int>[
+                for (final dynamic number in json['klasseIds']) number as int
+              ]
+            : null {
+    if (json.containsKey('invigilators')) {
+      final Map<(DateTime, DateTime), int> guards =
+          <(DateTime, DateTime), int>{};
+      guards.addEntries(<MapEntry<(DateTime, DateTime), int>>[
+        for (final Map<String, dynamic> entry in json['invigilators'])
+          MapEntry<(DateTime, DateTime), int>((
+            untisTimeToTimeOfDay(entry['startTime'])!,
+            untisTimeToTimeOfDay(entry['endTime'])!
+          ), entry['id'])
+      ]);
+      watchingTeacher = guards;
+    }
+  }
 
   /// The id of an individual [UntisExam]
   final int id;
@@ -721,4 +781,58 @@ class UntisExam {
 
   /// Mostly just the teacher's short name
   final String text;
+
+  /// Starting date and time for this exam.
+  ///
+  /// Only specified when using `getExams`
+  final DateTime? startDateTime;
+
+  /// Ending date and time for this exam.
+  ///
+  /// Only specified when using `getExams`
+  final DateTime? endDateTime;
+
+  /// Probably represents the "department", where the class is in.
+  ///
+  /// In my testing this was always 0.
+  ///
+  /// Only specified when using `getExams`
+  final int? departmentId;
+
+  /// The id of the corresponding [UntisSubject]
+  ///
+  /// Only specified when using `getExams`
+  final int? subjectId;
+
+  /// The ids of the participating classes.
+  /// E.g. when multiple classes have the same teacher in one subject
+  /// they could write the same exam together.
+  ///
+  /// Only specified when using `getExams`
+  final List<int>? classIds;
+
+  /// The ids of the used rooms.
+  /// E.g. when multiple classes are writing the same exam together,
+  /// but there is not enough place for everyone
+  /// it could be written in different rooms.
+  ///
+  /// Only specified when using `getExams`
+  final List<int>? roomIds;
+
+  /// The ids of the teachers either guarding or creating the exam.
+  ///
+  /// Only specified when using `getExams`
+  final List<int>? teacherIds;
+
+  /// The ids of teachers watching/checking the students grouped by timeslots.
+  ///
+  /// Only specified when using `getExams`
+  Map<(DateTime, DateTime), int>? watchingTeacher;
+
+  @override
+  String toString() => '{id: $id, examType: $examType, name: $name, '
+      'text: $text, startDateTime: $startDateTime, endDateTime: $endDateTime, '
+      'departmentId: $departmentId, subjectId: $subjectId, classIds: $classIds,'
+      ' roomIds: $roomIds, teacherIds: $teacherIds, '
+      'watchingTeacher: $watchingTeacher}';
 }

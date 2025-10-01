@@ -96,20 +96,20 @@ class UntisSession {
     ];
   }
 
-  /// Gets Homeworks within defined time period and with search parameters.
+  /// Gets Exams within defined time period and with search parameters.
   ///
   /// You can provide a [startDate], which defaults to [DateTime.now()].
   /// An [endDate], which defaults to [startDate + 7 days]. Additionally
-  /// an [id] can be specified.
+  /// an [studentId] can be specified.
   Future<List<UntisExam>> getExams(
       {DateTime? startDate,
       DateTime? endDate,
-      UntisElementDescriptor? id}) async {
+      UntisElementDescriptor? studentId}) async {
     startDate ??= DateTime.now();
     endDate ??= startDate.add(const Duration(days: 7));
 
-    final ExamsRequest request = ExamsRequest(
-        apiEndpoint, _auth, id ?? (await studentData).id, startDate, endDate);
+    final ExamsRequest request = ExamsRequest(apiEndpoint, _auth,
+        studentId ?? (await studentData).id, startDate, endDate);
     final Map<String, dynamic> json = (await request.request())!;
     return <UntisExam>[
       for (final Map<String, dynamic> entry in json['exams'])

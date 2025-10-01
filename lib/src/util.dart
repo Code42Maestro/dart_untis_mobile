@@ -40,7 +40,7 @@ DateTime? untisDateTimeToDateTime(String? dateTime) {
 }
 
 String _twoDigitInt(int value) {
-  if (value > 10) return '$value';
+  if (value >= 10) return '$value';
   return '0$value';
 }
 
